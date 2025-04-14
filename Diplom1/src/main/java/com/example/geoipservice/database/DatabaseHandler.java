@@ -11,7 +11,6 @@ import java.sql.*;
 import java.time.LocalDateTime;
 
 public class DatabaseHandler {
-    // ... (остальной код класса, включая поля и другие методы)
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseHandler.class);
     private static final String DB_URL = "jdbc:postgresql://localhost:5432/demo";
@@ -168,6 +167,7 @@ public class DatabaseHandler {
             closeConnection(conn);
         }
     }
+
     // Метод для проверки актуальности данных
     public boolean isDataOutdated(RequestType requestType, String ip, double latitude, double longitude) {
         String sql;
@@ -387,5 +387,24 @@ public class DatabaseHandler {
         }
     }
 
-    // ... (остальные методы)
+    private void handleRollback(Connection conn, SQLException e) {
+        if (conn != null) {
+            try {
+                conn.rollback();
+                logger.error("Транзакция отменена из-за ошибки: {}", e.getMessage(), e);
+            } catch (SQLException rollbackEx) {
+                logger.error("Ошибка при откате транзакции: {}", rollbackEx.getMessage(), rollbackEx);
+            }
+        }
+    }
+
+    private void closeConnection(Connection conn) {
+        if (conn != null) {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                logger.error("Ошибка при закрытии соединения: {}", e.getMessage(), e);
+            }
+        }
+    }
 }
