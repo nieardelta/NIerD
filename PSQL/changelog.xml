@@ -1,0 +1,115 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- Таблица для хранения запросов -->
+    <changeSet id="1" author="puk">
+
+        <comment>Создание таблицы requests</comment>
+        <createTable tableName="requests">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+			<!-- Является привичным ключём-->
+            <column name="ip_address" type="VARCHAR(15)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="request_timestamp" type="TIMESTAMP">
+                <constraints nullable="false"/>
+				<!-- Добавил сразу ограничение на нулл поля -->
+            </column>
+        </createTable>
+		
+    </changeSet>
+
+    <!-- Таблица для хранения ответов -->
+    <changeSet id="2" author="puk">
+        <comment>Создание таблицы responses</comment>
+        <createTable tableName="responses">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+			<!-- Является привичным ключом -->
+            <column name="request_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_request_id" references="requests(id)"/>
+            </column>
+			<!-- 
+                Ограничение: столбец не может быть NULL.
+			-->	
+            <column name="country_code" type="VARCHAR(2)"/>
+			<!--Код страны взял за 2 символа -->
+            <column name="country_name" type="VARCHAR(100)"/>
+			<!--Страна до 100 символов-->
+            <column name="city" type="VARCHAR(100)"/>
+			<!--Город, до 100-->
+			<!--Колонка для хранения долготы, с плавающей точкой-->
+            <column name="response_timestamp" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+		
+    </changeSet>
+	
+	<!-- Добавляем колонку raw_response в существующие таблицы -->
+    <changeSet id="3" author="puk">
+        <addColumn tableName="requests">
+            <column name="raw_response" type="TEXT"/>
+        </addColumn>
+        <addColumn tableName="responses">
+            <column name="raw_response" type="TEXT"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Создаем таблицы для координат -->
+    <changeSet id="4" author="puk">
+        <createTable tableName="coordinate_requests">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="request_timestamp" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="raw_response" type="TEXT"/>
+        </createTable>
+
+        <createTable tableName="coordinate_responses">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="request_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_coordinate_request_id" references="coordinate_requests(id)"/>
+            </column>
+            <column name="country_code" type="VARCHAR(2)"/>
+            <column name="country_name" type="VARCHAR(100)"/>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="response_timestamp" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="raw_response" type="TEXT"/>
+        </createTable>
+    </changeSet>
+	
+	<!--Добавляем колонку location в responses-->
+	<changeSet id="5" author="puk">
+        <addColumn tableName="responses">
+            <column name="location" type="geometry(Point, 4326)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Добавляем колонку location в coordinate_requests -->
+    <changeSet id="6" author="puk">
+        <addColumn tableName="coordinate_requests">
+            <column name="location" type="geometry(Point, 4326)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Добавляем колонку location в coordinate_responses -->
+    <changeSet id="7" author="puk">
+        <addColumn tableName="coordinate_responses">
+            <column name="location" type="geometry(Point, 4326)"/>
+        </addColumn>
+    </changeSet>
+	    
+</databaseChangeLog>
